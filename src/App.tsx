@@ -27,6 +27,10 @@ const App = () => {
   const [windowSize, setWindowSize] = useState({ width: 600, height: 400 });
   const [showWindowLabel, setShowWindowLabel] = useState(true);
   
+  // Star/particle control
+  const [particleCount, setParticleCount] = useState(20);
+  const [showParticleControls, setShowParticleControls] = useState(false);
+  
   // Waleed robot states
   const [showWaleed, setShowWaleed] = useState(false);
   const [waleedDialog, setWaleedDialog] = useState('');
@@ -34,6 +38,84 @@ const App = () => {
   const [dialogOptions, setDialogOptions] = useState<DialogOption[]>([]);
   const [dialogHistory, setDialogHistory] = useState<string[]>([]);
   const [isWaleedTyping, setIsWaleedTyping] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  
+  // Speech synthesis
+  const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+  const availableVoices = useRef<SpeechSynthesisVoice[]>([]);
+  
+  // Get available voices
+  useEffect(() => {
+    if (!synth) return;
+    
+    const populateVoices = () => {
+      availableVoices.current = synth.getVoices();
+    };
+    
+    populateVoices();
+    synth.onvoiceschanged = populateVoices;
+    
+    return () => {
+      if (synth) {
+        synth.onvoiceschanged = null;
+      }
+    };
+  }, []);
+  
+  // Stop speech when component unmounts
+  useEffect(() => {
+    return () => {
+      if (synth && synth.speaking) {
+        synth.cancel();
+      }
+    };
+  }, []);
+  
+  // Function to speak text
+  const speakText = (text: string) => {
+    if (!synth || !voiceEnabled) return;
+    
+    // Clean the text for better speech synthesis (remove markdown-style formatting)
+    const cleanText = text.replace(/\*([^*]+)\*/g, '$1');
+    
+    // Cancel any ongoing speech
+    if (synth.speaking) {
+      synth.cancel();
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    
+    // Find a good voice for Waleed
+    // Prioritize British or American English voices that sound male
+    let selectedVoice = availableVoices.current.find(
+      voice => voice.name.includes('Daniel') || voice.name.includes('Google UK English Male')
+    );
+    
+    // Fallback to any English voice
+    if (!selectedVoice) {
+      selectedVoice = availableVoices.current.find(
+        voice => voice.lang.includes('en-')
+      );
+    }
+    
+    // Use any available voice if no English voice is found
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    
+    // Set voice properties
+    utterance.rate = 1.1; // Slightly faster
+    utterance.pitch = 1.05; // Slightly higher pitch
+    utterance.volume = 0.9;
+    
+    // Events
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    
+    synth.speak(utterance);
+  };
   
   const codeRef = useRef<HTMLDivElement>(null);
   const windowRef = useRef<HTMLDivElement>(null);
@@ -104,9 +186,15 @@ const App = () => {
   // Function to initialize Waleed
   const initWaleed = () => {
     setShowWaleed(true);
-    typeWriterEffect("Hi there! I'm Waleed, your friendly neighborhood AI assistant. How can I help you today?");
+    const initialMessage = "Hi there! I'm Waleed, your friendly neighborhood AI assistant. How can I help you today?";
+    typeWriterEffect(initialMessage);
     setWaleedMood('happy');
     setDialogOptions(initialDialog);
+    
+    // Speak the initial greeting
+    setTimeout(() => {
+      speakText(initialMessage);
+    }, 500);
   };
 
   // Function to handle dialog selection
@@ -122,6 +210,11 @@ const App = () => {
     setTimeout(() => {
       typeWriterEffect(option.response);
       setWaleedMood(option.mood || 'neutral');
+      
+      // Speak the response after a short delay
+      setTimeout(() => {
+        speakText(option.response);
+      }, 500);
       
       // Set new follow-up options if they exist
       setTimeout(() => {
@@ -337,16 +430,119 @@ const App = () => {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 0.7; }
           }
+          
+          /* Floating particles animation */
+          @keyframes floatParticle {
+            0% {
+              transform: translateY(0) translateX(0);
+              opacity: 0.3;
+            }
+            25% {
+              opacity: 0.7;
+            }
+            75% {
+              opacity: 0.5;
+            }
+            100% {
+              transform: translateY(-100vh) translateX(20px);
+              opacity: 0;
+            }
+          }
+          
+          /* Star twinkling animation */
+          @keyframes twinkle {
+            0%, 100% {
+              opacity: 0.2;
+              transform: scale(0.8);
+            }
+            50% {
+              opacity: 1;
+              transform: scale(1.1);
+            }
+          }
+          
+          /* Gradient slide animation */
+          @keyframes gradientSlide {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
+          }
+          
+          .animate-gradientSlide {
+            animation: gradientSlide 8s ease-in-out infinite;
+          }
+          
+          /* Fix for Safari glow effect */
+          .star-twinkle {
+            filter: blur(0.5px);
+          }
         `}</style>
         
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
           {/* Background */}
           <div className="absolute inset-0">
-            {/* Grid Pattern */}
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-5" />
-            {/* Simple Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black" />
+            {/* Dynamic gradient background with animation */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-black/90 to-black z-0">
+              {/* Animated particles */}
+              <div className="absolute inset-0" aria-hidden="true">
+                {Array.from({ length: particleCount }).map((_, i) => {
+                  // Generate random properties for each star
+                  const size = Math.random() * 2 + 1;
+                  const x = Math.random() * 100;
+                  const y = Math.random() * 100;
+                  const opacity = Math.random() * 0.7 + 0.3;
+                  const delay = Math.random() * 5;
+                  const duration = 10 + Math.random() * 20;
+                  const colorTypes = [
+                    'bg-blue-400', 'bg-blue-300', 'bg-white', 
+                    'bg-purple-300', 'bg-indigo-300'
+                  ];
+                  const colorClass = colorTypes[Math.floor(Math.random() * colorTypes.length)];
+                  
+                  // Map color class to shadow color
+                  const shadowColor = {
+                    'bg-blue-400': 'rgba(96, 165, 250, 0.6)',
+                    'bg-blue-300': 'rgba(147, 197, 253, 0.6)',
+                    'bg-white': 'rgba(255, 255, 255, 0.6)',
+                    'bg-purple-300': 'rgba(216, 180, 254, 0.6)',
+                    'bg-indigo-300': 'rgba(165, 180, 252, 0.6)'
+                  }[colorClass];
+                  
+                  return (
+                    <div
+                      key={i}
+                      className={`absolute rounded-full ${colorClass} star-twinkle`}
+                      style={{
+                        top: `${y}%`,
+                        left: `${x}%`,
+                        width: `${size}px`,
+                        height: `${size}px`,
+                        opacity,
+                        animation: `floatParticle ${duration}s linear infinite, twinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
+                        animationDelay: `${delay}s, ${Math.random() * 3}s`,
+                        boxShadow: `0 0 ${size * 2}px 0 ${shadowColor}`
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              
+              {/* Grid Pattern */}
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-5" />
+              
+              {/* Accent color orbs */}
+              <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-blue-500/5 filter blur-[100px] animate-pulse" style={{ animationDuration: '15s' }} />
+              <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] rounded-full bg-purple-500/5 filter blur-[100px] animate-pulse" style={{ animationDuration: '10s' }} />
+              
+              {/* Animated gradient line */}
+              <div className="absolute top-1/2 inset-x-0 h-px w-full overflow-hidden">
+                <div className="absolute inset-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent w-full -translate-x-full animate-gradientSlide" />
+              </div>
+            </div>
           </div>
           
           {/* Content */}
@@ -376,10 +572,10 @@ const App = () => {
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20 animate-fadeIn" style={{ animationDelay: '800ms' }}>
-              <button className="px-8 py-3 bg-blue-500 rounded-lg font-medium hover:bg-blue-400 transition-colors">
+              <button className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg font-medium hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 transform hover:-translate-y-1">
                 Get Started
               </button>
-              <button className="px-8 py-3 border border-blue-500/20 rounded-lg font-medium hover:bg-blue-500/10 transition-colors">
+              <button className="px-8 py-3 border border-blue-500/20 rounded-lg font-medium hover:bg-blue-500/10 hover:border-blue-500/40 transition-all duration-300 transform hover:-translate-y-1">
                 Schedule Demo
               </button>
             </div>
@@ -401,6 +597,69 @@ const App = () => {
                   </div>
                 </div>
               ))}
+            </div>
+            
+            {/* Star Controller */}
+            <div className="fixed top-4 right-4 z-30">
+              <button 
+                onClick={() => setShowParticleControls(!showParticleControls)}
+                className="flex items-center space-x-2 bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-full px-4 py-2 text-blue-300 hover:bg-blue-500/30 transition-all duration-300"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                <span>{showParticleControls ? 'Hide Controls' : 'Adjust Stars'}</span>
+              </button>
+              
+              {showParticleControls && (
+                <div className="mt-2 p-4 bg-gray-900/80 backdrop-blur-sm border border-blue-500/30 rounded-lg shadow-lg animate-fadeIn">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-blue-300 text-sm">Star Density</span>
+                    <span className="text-blue-400 text-sm font-mono">{particleCount}</span>
+                  </div>
+                  
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="200" 
+                    value={particleCount} 
+                    onChange={(e) => setParticleCount(parseInt(e.target.value))}
+                    className="w-full h-2 bg-blue-500/20 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      // Custom styling for the range input
+                      background: 'linear-gradient(to right, rgba(59, 130, 246, 0.5) 0%, rgba(59, 130, 246, 0.5) ' + 
+                        (particleCount / 2) + '%, rgba(59, 130, 246, 0.1) ' + (particleCount / 2) + '%, rgba(59, 130, 246, 0.1) 100%)'
+                    }}
+                  />
+                  
+                  <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>None</span>
+                    <span>Default</span>
+                    <span>Dense</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2 mt-3">
+                    <button 
+                      onClick={() => setParticleCount(0)} 
+                      className="text-xs py-1 px-2 bg-blue-500/10 hover:bg-blue-500/20 rounded border border-blue-500/20 transition-colors"
+                    >
+                      None
+                    </button>
+                    <button 
+                      onClick={() => setParticleCount(20)} 
+                      className="text-xs py-1 px-2 bg-blue-500/10 hover:bg-blue-500/20 rounded border border-blue-500/20 transition-colors"
+                    >
+                      Default
+                    </button>
+                    <button 
+                      onClick={() => setParticleCount(100)} 
+                      className="text-xs py-1 px-2 bg-blue-500/10 hover:bg-blue-500/20 rounded border border-blue-500/20 transition-colors"
+                    >
+                      Dense
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -724,12 +983,42 @@ const App = () => {
                           <div className="flex items-center mb-2">
                             <div className="font-bold text-blue-400 mr-2">Waleed</div>
                             <div className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">AI Assistant</div>
+                            
+                            {/* Voice controls */}
+                            <button 
+                              onClick={() => setVoiceEnabled(!voiceEnabled)}
+                              className="ml-auto text-gray-400 hover:text-blue-400 transition-colors"
+                              title={voiceEnabled ? "Mute voice" : "Unmute voice"}
+                            >
+                              {voiceEnabled ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                </svg>
+                              ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                                  <line x1="23" y1="9" x2="17" y2="15"></line>
+                                  <line x1="17" y1="9" x2="23" y2="15"></line>
+                                </svg>
+                              )}
+                            </button>
                           </div>
                           
                           {/* Dialog Text with Typing Indicator */}
                           <div className="text-gray-300 mb-4">
                             {waleedDialog}
                             {isWaleedTyping && <span className="inline-block w-1.5 h-4 bg-blue-400 ml-1 animate-pulse" />}
+                            
+                            {/* Speaking indicator */}
+                            {isSpeaking && !isWaleedTyping && voiceEnabled && (
+                              <div className="flex space-x-1 ml-2 mt-2">
+                                <div className="w-1 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDuration: '0.8s' }}></div>
+                                <div className="w-1 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDuration: '0.8s', animationDelay: '0.2s' }}></div>
+                                <div className="w-1 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDuration: '0.8s', animationDelay: '0.4s' }}></div>
+                              </div>
+                            )}
                           </div>
                           
                           {/* Dialog Options */}
@@ -788,7 +1077,13 @@ const App = () => {
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-400 relative animate-pulse"></div>
                       </div>
                     </div>
-                    <span>Ask Waleed</span>
+                    <div className="flex items-center">
+                      <span>Ask Waleed</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1 text-blue-300/70">
+                        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      </svg>
+                    </div>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-0 group-hover:w-4 transition-all overflow-hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
