@@ -6,6 +6,8 @@ import equinologyLogo from './images/logo.webp';
 import Blog from './pages/Blog';
 import Contact from './pages/Contact';
 import FindOutMore from './pages/FindOutMore';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
 
 interface Position {
   x: number;
@@ -1163,6 +1165,8 @@ const App = () => {
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/find-out-more" element={<FindOutMore />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </div>
   );
