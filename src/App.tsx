@@ -8,6 +8,7 @@ import Contact from './pages/Contact';
 import FindOutMore from './pages/FindOutMore';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import BlogPost from './pages/BlogPost';
 
 interface Position {
   x: number;
@@ -1163,6 +1164,7 @@ const App = () => {
           </div>
         } />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<BlogPost />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/find-out-more" element={<FindOutMore />} />
         <Route path="/admin" element={<AdminLogin />} />
