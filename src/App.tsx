@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import InteractiveFooter from './components/InteractiveFooter';
 import Header from './components/Header';
 import { useEffect, useRef, useState } from 'react';
@@ -9,6 +9,8 @@ import FindOutMore from './pages/FindOutMore';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import BlogPost from './pages/BlogPost';
+import Portfolio from './pages/Portfolio';
+import LaptopScreen from './components/LaptopScreen';
 
 interface Position {
   x: number;
@@ -34,6 +36,8 @@ const App = () => {
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
   const [windowSize, setWindowSize] = useState({ width: 600, height: 400 });
   const [showWindowLabel, setShowWindowLabel] = useState(true);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
   
   // Star/particle control
   const [particleCount, setParticleCount] = useState(100);
@@ -343,26 +347,21 @@ const App = () => {
     });
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
-
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const maxX = containerRect.width - windowSize.width;
-    const maxY = containerRect.height - windowSize.height;
-
-    let newX = e.clientX - dragOffset.x - containerRect.left;
-    let newY = e.clientY - dragOffset.y - containerRect.top;
-
-    // Constrain to container bounds
-    newX = Math.max(0, Math.min(newX, maxX));
-    newY = Math.max(0, Math.min(newY, maxY));
-
-    if (!isCodeFullscreen) {
-      setPosition({
-        x: newX,
-        y: newY
-      });
-    }
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isHovering) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Calculate rotation based on mouse position relative to center
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = ((y - centerY) / centerY) * 10;
+    const rotateY = ((x - centerX) / centerX) * 10;
+    
+    setMousePosition({ x: rotateY, y: rotateX });
   };
 
   const handleMouseUp = () => {
@@ -417,6 +416,15 @@ const App = () => {
     }
   };
 
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    setMousePosition({ x: 0, y: 0 });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-black text-white">
       <Header />
@@ -437,6 +445,43 @@ const App = () => {
           }
         }
         
+        @keyframes floatParticle {
+          0% {
+            transform: translateY(0) translateX(0);
+            opacity: 0.3;
+          }
+          25% {
+            opacity: 0.7;
+          }
+          75% {
+            opacity: 0.5;
+          }
+          100% {
+            transform: translateY(-100vh) translateX(20px);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes twinkle {
+          0%, 100% {
+            opacity: 0.2;
+            transform: scale(0.8);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.1);
+          }
+        }
+        
+        @keyframes gradientSlide {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        
         .animate-fadeIn {
           animation: fadeIn 1.2s ease-out forwards;
           opacity: 0;
@@ -445,6 +490,14 @@ const App = () => {
         .animate-reveal {
           animation: reveal 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
           opacity: 0;
+        }
+        
+        .animate-gradientSlide {
+          animation: gradientSlide 8s ease-in-out infinite;
+        }
+        
+        .star-twinkle {
+          filter: blur(0.5px);
         }
         
         /* Stagger children animation with longer delays */
@@ -540,7 +593,7 @@ const App = () => {
                   <div className="absolute inset-0 bg-gradient-to-b from-black via-black/90 to-black z-0">
                     {/* Animated particles */}
                     <div className="absolute inset-0" aria-hidden="true">
-                      {Array.from({ length: particleCount }).map((_, i) => {
+                      {Array.from({ length: 100 }).map((_, i) => {
                         // Generate random properties for each star
                         const size = Math.random() * 2 + 1;
                         const x = Math.random() * 100;
@@ -719,134 +772,15 @@ const App = () => {
                         ))}
                       </div>
                       <div className="mt-8 flex space-x-4">
-                        <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg font-medium hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 transform hover:-translate-y-1">
+                        <Link to="/portfolio" className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg font-medium hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 transform hover:-translate-y-1">
                           View Our Work
-                        </button>
+                        </Link>
                         <button className="px-6 py-3 border border-blue-500/20 rounded-lg font-medium hover:bg-blue-500/10 hover:border-blue-500/40 transition-all duration-300 transform hover:-translate-y-1">
                           Get a Quote
                         </button>
                       </div>
                     </div>
-                    <div className="relative h-[500px] bg-black/20 rounded-lg overflow-hidden group">
-                      {/* Website Preview */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-full h-full bg-gradient-to-br from-blue-500/10 to-purple-600/10 rounded-lg p-4">
-                          <div className="w-full h-full bg-black/30 rounded-lg border border-blue-500/20 p-4">
-                            {/* Browser Controls */}
-                            <div className="flex items-center space-x-2 mb-4">
-                              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                            </div>
-                            
-                            {/* Website Content */}
-                            <div className="space-y-4">
-                              {/* Navigation Bar */}
-                              <div className="h-8 bg-blue-500/20 rounded w-full flex items-center justify-between px-4">
-                                <div className="text-white text-sm font-medium">Equinology</div>
-                                <div className="flex space-x-4">
-                                  <div className="w-2 h-2 rounded-full bg-white/30"></div>
-                                  <div className="w-2 h-2 rounded-full bg-white/30"></div>
-                                  <div className="w-2 h-2 rounded-full bg-white/30"></div>
-                                </div>
-                              </div>
-                              
-                              {/* Happy Customers Section */}
-                              <div className="grid grid-cols-3 gap-4">
-                                {/* Customer Review 1 */}
-                                <div className="h-32 bg-blue-500/20 rounded flex flex-col justify-center items-center p-4">
-                                  <div className="text-white/80 text-sm text-center mb-2 line-clamp-4">
-                                    "Delivered on time with exceptional attention to detail!"
-                                  </div>
-                                  <div className="flex space-x-1">
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                  </div>
-                                </div>
-
-                                {/* Customer Review 2 */}
-                                <div className="h-32 bg-blue-500/20 rounded flex flex-col justify-center items-center p-4">
-                                  <div className="text-white/80 text-sm text-center mb-2 line-clamp-4">
-                                    "Transformed our outdated site into a modern platform."
-                                  </div>
-                                  <div className="flex space-x-1">
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                  </div>
-                                </div>
-
-                                {/* Customer Review 3 */}
-                                <div className="h-32 bg-blue-500/20 rounded flex flex-col justify-center items-center p-4">
-                                  <div className="text-white/80 text-sm text-center mb-2 line-clamp-4">
-                                    "Significantly boosted our online presence!"
-                                  </div>
-                                  <div className="flex space-x-1">
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {/* Section Title */}
-                              <div className="h-24 bg-blue-500/20 rounded w-full flex items-center justify-center">
-                                <div className="w-32 h-4 bg-white/20 rounded"></div>
-                              </div>
-                              
-                              {/* Footer */}
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="h-16 bg-blue-500/20 rounded flex items-center justify-center">
-                                  <div className="w-20 h-2 bg-white/20 rounded"></div>
-                                </div>
-                                <div className="h-16 bg-blue-500/20 rounded flex items-center justify-center">
-                                  <div className="w-20 h-2 bg-white/20 rounded"></div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Animated gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    </div>
+                    <LaptopScreen />
                   </div>
                 </div>
               </section>
@@ -1348,6 +1282,7 @@ const App = () => {
         <Route path="/find-out-more" element={<FindOutMore />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/portfolio" element={<Portfolio />} />
       </Routes>
     </div>
   );

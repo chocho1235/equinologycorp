@@ -15,6 +15,12 @@ const Header = () => {
           {/* Navigation */}
           <nav className="flex space-x-8">
             <Link 
+              to="/portfolio" 
+              className="text-gray-300 hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Portfolio
+            </Link>
+            <Link 
               to="/blog" 
               className="text-gray-300 hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
