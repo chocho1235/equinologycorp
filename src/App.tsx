@@ -338,31 +338,20 @@ const App = () => {
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target instanceof Element && e.target.closest('.window-controls')) return;
-    if (!windowRef.current) return;
-    
     setIsDragging(true);
-    const rect = windowRef.current.getBoundingClientRect();
     setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
     });
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isHovering) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Calculate rotation based on mouse position relative to center
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const rotateX = ((y - centerY) / centerY) * 10;
-    const rotateY = ((x - centerX) / centerX) * 10;
-    
-    setMousePosition({ x: rotateY, y: rotateX });
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y
+      });
+    }
   };
 
   const handleMouseUp = () => {
@@ -373,13 +362,15 @@ const App = () => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     }
-
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragOffset, windowSize]);
+  }, [isDragging, dragOffset]);
 
   const toggleCodeMinimize = () => {
     setIsCodeMinimized(!isCodeMinimized);
@@ -724,48 +715,40 @@ const App = () => {
                 </div>
               </section>
 
-              {/* Features Section */}
-              <section ref={featuresRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="features">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-10" />
-                <div className="max-w-6xl mx-auto">
-                  <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-                    Enterprise Solutions
-                  </h2>
-                  <div className="grid md:grid-cols-3 gap-8 stagger-children">
-                    {[
-                      {
-                        title: "Machine Learning",
-                        description: "Custom ML models trained on your data for precise predictions and insights.",
-                        icon: "🤖"
-                      },
-                      {
-                        title: "Big Data Analytics",
-                        description: "Process and analyze massive datasets in real-time with our scalable infrastructure.",
-                        icon: "📊"
-                      },
-                      {
-                        title: "AI Consulting",
-                        description: "Expert guidance on implementing AI solutions in your business workflow.",
-                        icon: "💡"
-                      }
-                    ].map((feature, index) => (
-                      <div 
-                        key={index}
-                        className="p-6 rounded-lg border border-blue-500/20 hover:border-blue-500/40 transition-all duration-500 bg-gradient-to-b from-blue-500/5 to-transparent hover:translate-y-[-8px] hover:shadow-xl hover:shadow-blue-500/10"
-                        style={{ transitionDelay: `${index * 100}ms` }}
-                      >
-                        <div className="text-4xl mb-4">{feature.icon}</div>
-                        <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                        <p className="text-gray-400">{feature.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
               {/* Website Development Section */}
               <section ref={websiteRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="websites">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-10" />
+                <div className="absolute inset-0">
+                  {/* Dynamic background */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black">
+                    {/* Animated code lines */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      {Array.from({ length: 20 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
+                          style={{
+                            width: `${Math.random() * 300 + 100}px`,
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            transform: `rotate(${Math.random() * 360}deg)`,
+                            animation: `codeLine ${Math.random() * 10 + 5}s linear infinite`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            filter: 'blur(0.5px)'
+                          }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Animated gradient mesh */}
+                    <div className="absolute inset-0 opacity-30 overflow-hidden">
+                      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(147,51,234,0.2)_50%,transparent_100%)] bg-[length:200%_200%] animate-gradientSlide" style={{ animationDuration: '12s', animationDelay: '3s' }} />
+                    </div>
+                    
+                    {/* Glowing orbs */}
+                    <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
+                    <div className="absolute bottom-1/3 right-1/3 w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[120px] animate-pulse" style={{ animationDuration: '8s', animationDelay: '2s' }} />
+                  </div>
+                </div>
                 <div className="max-w-6xl mx-auto relative">
                   <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <div>
@@ -784,9 +767,15 @@ const App = () => {
                           "Interactive user interfaces",
                           "Secure and scalable architecture"
                         ].map((feature, index) => (
-                          <div key={index} className="flex items-center space-x-3 group" style={{ transitionDelay: `${index * 100}ms` }}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 group-hover:bg-purple-500 transition-colors" />
-                            <span className="text-gray-300 group-hover:text-white transition-colors">{feature}</span>
+                          <div 
+                            key={index}
+                            className="p-6 rounded-lg border border-blue-500/20 hover:border-blue-500/40 transition-all duration-500 bg-gradient-to-b from-blue-500/5 to-transparent hover:translate-y-[-8px] hover:shadow-xl hover:shadow-blue-500/10"
+                            style={{ transitionDelay: `${index * 100}ms` }}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 group-hover:bg-purple-500 transition-colors" />
+                              <span className="text-gray-300 group-hover:text-white transition-colors">{feature}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -806,7 +795,38 @@ const App = () => {
 
               {/* Technical Showcase Section */}
               <section ref={technicalRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="technical">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-10" />
+                <div className="absolute inset-0">
+                  {/* Dynamic background */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black">
+                    {/* Animated circuit paths */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      {Array.from({ length: 30 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
+                          style={{
+                            width: `${Math.random() * 300 + 100}px`,
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            transform: `rotate(${Math.random() * 360}deg)`,
+                            animation: `circuitPath ${Math.random() * 15 + 10}s linear infinite`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            filter: 'blur(0.5px)'
+                          }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Animated gradient mesh */}
+                    <div className="absolute inset-0 opacity-30 overflow-hidden">
+                      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(147,51,234,0.2)_50%,transparent_100%)] bg-[length:200%_200%] animate-gradientSlide" style={{ animationDuration: '12s', animationDelay: '3s' }} />
+                    </div>
+                    
+                    {/* Glowing orbs */}
+                    <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
+                    <div className="absolute bottom-1/2 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[150px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '3s' }} />
+                  </div>
+                </div>
                 <div className="max-w-6xl mx-auto relative">
                   <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <div>
@@ -823,15 +843,19 @@ const App = () => {
                           "Dynamic scaling",
                           "Multi-GPU optimization"
                         ].map((feature, index) => (
-                          <div key={index} className="flex items-center space-x-3" style={{ transitionDelay: `${index * 100}ms` }}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                            <span>{feature}</span>
+                          <div 
+                            key={index}
+                            className="p-6 rounded-lg border border-blue-500/20 hover:border-blue-500/40 transition-all duration-500 bg-gradient-to-b from-blue-500/5 to-transparent hover:translate-y-[-8px] hover:shadow-xl hover:shadow-blue-500/10"
+                            style={{ transitionDelay: `${index * 100}ms` }}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 group-hover:bg-purple-500 transition-colors" />
+                              <span className="text-gray-300 group-hover:text-white transition-colors">{feature}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
                     </div>
-                    
-                    {/* Container for the window */}
                     <div 
                       ref={containerRef}
                       className="relative h-[500px] w-full"
@@ -840,11 +864,11 @@ const App = () => {
                       {showWindowLabel && (
                         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50">
                           <div className="relative">
-                            <div className="relative bg-blue-500/20 backdrop-blur-sm px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 border border-blue-500/30">
+                            <div className="relative bg-blue-500/20 px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 border border-blue-500/30">
                               <span className="text-blue-400 text-sm font-medium">Try the window controls</span>
                               <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                             </div>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-blue-500/20 backdrop-blur-sm transform rotate-45 border border-blue-500/30" />
+                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-blue-500/20 transform rotate-45 border border-blue-500/30" />
                           </div>
                         </div>
                       )}
@@ -958,7 +982,38 @@ const App = () => {
 
               {/* Neural Network Visualizer Section */}
               <section ref={neuralNetworkRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="neural-network">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-10" />
+                <div className="absolute inset-0">
+                  {/* Dynamic background */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black">
+                    {/* Animated neural connections */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      {Array.from({ length: 40 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"
+                          style={{
+                            width: `${Math.random() * 400 + 200}px`,
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            transform: `rotate(${Math.random() * 360}deg)`,
+                            animation: `neuralConnection ${Math.random() * 20 + 15}s linear infinite`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            filter: 'blur(0.5px)'
+                          }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Animated gradient mesh */}
+                    <div className="absolute inset-0 opacity-30 overflow-hidden">
+                      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(147,51,234,0.2)_50%,transparent_100%)] bg-[length:200%_200%] animate-gradientSlide" style={{ animationDuration: '12s', animationDelay: '3s' }} />
+                    </div>
+                    
+                    {/* Glowing orbs */}
+                    <div className="absolute top-1/3 right-1/3 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 filter blur-[180px] animate-pulse" style={{ animationDuration: '15s' }} />
+                    <div className="absolute bottom-1/3 left-1/3 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[180px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+                  </div>
+                </div>
                 <div className="max-w-6xl mx-auto relative">
                   <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <div>
@@ -975,9 +1030,15 @@ const App = () => {
                           "Activation heatmaps",
                           "Layer-wise analysis"
                         ].map((feature, index) => (
-                          <div key={index} className="flex items-center space-x-3" style={{ transitionDelay: `${index * 100}ms` }}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                            <span>{feature}</span>
+                          <div 
+                            key={index}
+                            className="p-6 rounded-lg border border-blue-500/20 hover:border-blue-500/40 transition-all duration-500 bg-gradient-to-b from-blue-500/5 to-transparent hover:translate-y-[-8px] hover:shadow-xl hover:shadow-blue-500/10"
+                            style={{ transitionDelay: `${index * 100}ms` }}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 group-hover:bg-blue-500 transition-colors" />
+                              <span className="text-gray-300 group-hover:text-white transition-colors">{feature}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1028,168 +1089,6 @@ const App = () => {
 
                       {/* Hover Effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                      {/* Waleed Robot Character */}
-                      {showWaleed ? (
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-20 transition-all duration-500 ease-out">
-                          <div className="bg-gray-900/90 backdrop-blur-sm border border-blue-500/30 rounded-t-lg shadow-lg shadow-blue-500/20 p-4 transition-all">
-                            <div className="flex items-start gap-4">
-                              {/* Waleed's Avatar */}
-                              <div className="relative w-20 h-20 flex-shrink-0" style={{ animation: 'float 6s ease-in-out infinite' }}>
-                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 p-1">
-                                  <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center overflow-hidden">
-                                    {/* Robot Face - changes with mood */}
-                                    <div className="relative w-full h-full">
-                                      {/* Eyes */}
-                                      <div className="absolute top-5 left-4 w-3 h-3 rounded-full bg-blue-400" 
-                                        style={{ animation: 'blink 3s ease-in-out infinite' }} />
-                                      <div className="absolute top-5 right-4 w-3 h-3 rounded-full bg-blue-400" 
-                                        style={{ animation: 'blink 3s ease-in-out infinite', animationDelay: '0.2s' }} />
-                                      
-                                      {/* Mouth - changes with mood */}
-                                      {waleedMood === 'happy' && (
-                                        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-8 h-2 bg-blue-400 rounded-full">
-                                          <div className="absolute top-[-4px] left-1/2 -translate-x-1/2 w-6 h-2 bg-gray-800 rounded-full" />
-                                        </div>
-                                      )}
-                                      {waleedMood === 'neutral' && (
-                                        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-6 h-1 bg-blue-400 rounded-full" />
-                                      )}
-                                      {waleedMood === 'confused' && (
-                                        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-6 h-1 bg-blue-400 rounded-full transform rotate-12" />
-                                      )}
-                                      
-                                      {/* Animated circuit patterns */}
-                                      <div className="absolute inset-0" style={{ animation: 'glow 5s ease-in-out infinite' }}>
-                                        <div className="absolute top-2 right-2 w-px h-2 bg-blue-400" />
-                                        <div className="absolute top-2 right-2 w-2 h-px bg-blue-400" />
-                                        <div className="absolute bottom-2 left-2 w-px h-2 bg-blue-400" />
-                                        <div className="absolute bottom-2 left-2 w-2 h-px bg-blue-400" />
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                {/* Status indicator */}
-                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-gray-900 p-[2px]">
-                                  <div className={`w-full h-full rounded-full ${isWaleedTyping ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`} />
-                                </div>
-                                
-                                {/* Holo projector effect */}
-                                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-16 h-3 bg-blue-500/20 rounded-full blur-md" />
-                              </div>
-                              
-                              {/* Dialog Area */}
-                              <div className="flex-1 min-h-[100px]">
-                                <div className="flex items-center mb-2">
-                                  <div className="font-bold text-blue-400 mr-2">Waleed</div>
-                                  <div className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">AI Assistant</div>
-                                  
-                                  {/* Voice controls */}
-                                  <button 
-                                    onClick={() => setVoiceEnabled(!voiceEnabled)}
-                                    className="ml-auto text-gray-400 hover:text-blue-400 transition-colors"
-                                    title={voiceEnabled ? "Mute voice" : "Unmute voice"}
-                                  >
-                                    {voiceEnabled ? (
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                      </svg>
-                                    ) : (
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-                                        <line x1="23" y1="9" x2="17" y2="15"></line>
-                                        <line x1="17" y1="9" x2="23" y2="15"></line>
-                                      </svg>
-                                    )}
-                                  </button>
-                                </div>
-                                
-                                {/* Dialog Text with Typing Indicator */}
-                                <div className="text-gray-300 mb-4">
-                                  {waleedDialog}
-                                  {isWaleedTyping && <span className="inline-block w-1.5 h-4 bg-blue-400 ml-1 animate-pulse" />}
-                                  
-                                  {/* Speaking indicator */}
-                                  {isSpeaking && !isWaleedTyping && voiceEnabled && (
-                                    <div className="flex space-x-1 ml-2 mt-2">
-                                      <div className="w-1 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDuration: '0.8s' }}></div>
-                                      <div className="w-1 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDuration: '0.8s', animationDelay: '0.2s' }}></div>
-                                      <div className="w-1 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDuration: '0.8s', animationDelay: '0.4s' }}></div>
-                                    </div>
-                                  )}
-                                </div>
-                                
-                                {/* Dialog Options */}
-                                {!isWaleedTyping && dialogOptions.length > 0 && (
-                                  <div className="flex flex-col gap-2 mt-4">
-                                    {dialogOptions.map((option, index) => (
-                                      <button
-                                        key={index}
-                                        onClick={() => handleDialogSelect(option)}
-                                        className="text-left px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 rounded border border-blue-500/30 transition-colors text-sm text-gray-300 hover:text-white"
-                                      >
-                                        {option.text}
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {/* Dialog History Toggle */}
-                            {dialogHistory.length > 0 && (
-                              <div className="mt-4 text-xs text-gray-500 border-t border-gray-700 pt-2">
-                                <div className="flex justify-between items-center">
-                                  <button
-                                    onClick={() => {
-                                      // Close Waleed
-                                      setShowWaleed(false);
-                                      // Reset dialog after animation completes
-                                      setTimeout(() => {
-                                        setDialogHistory([]);
-                                        setWaleedDialog('');
-                                        setDialogOptions([]);
-                                      }, 500);
-                                    }}
-                                    className="text-red-400 hover:text-red-300 transition-colors"
-                                  >
-                                    End conversation
-                                  </button>
-                                  <div className="flex items-center space-x-1">
-                                    <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" />
-                                    <span className="text-blue-400">AI powered by Equinology</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={initWaleed}
-                          className="absolute bottom-4 right-4 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 rounded-full text-blue-300 flex items-center space-x-2 transition-all hover:shadow-lg hover:shadow-blue-500/20 hover:pr-6 group z-20"
-                        >
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 p-1 mr-2 relative">
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full animate-ping opacity-30"></div>
-                            <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 relative animate-pulse"></div>
-                            </div>
-                          </div>
-                          <div className="flex items-center">
-                            <span>Ask Waleed</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1 text-blue-300/70">
-                              <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-                              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                            </svg>
-                          </div>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-0 group-hover:w-4 transition-all overflow-hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -1197,7 +1096,38 @@ const App = () => {
 
               {/* Performance Metrics Section */}
               <section ref={metricsRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="metrics">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-10" />
+                <div className="absolute inset-0">
+                  {/* Dynamic background */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black">
+                    {/* Animated data streams */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      {Array.from({ length: 25 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
+                          style={{
+                            width: `${Math.random() * 300 + 100}px`,
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            transform: `rotate(${Math.random() * 360}deg)`,
+                            animation: `dataStream ${Math.random() * 12 + 8}s linear infinite`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            filter: 'blur(0.5px)'
+                          }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Animated gradient mesh */}
+                    <div className="absolute inset-0 opacity-30 overflow-hidden">
+                      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(147,51,234,0.2)_50%,transparent_100%)] bg-[length:200%_200%] animate-gradientSlide" style={{ animationDuration: '12s', animationDelay: '3s' }} />
+                    </div>
+                    
+                    {/* Glowing orbs */}
+                    <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[200px] animate-pulse" style={{ animationDuration: '20s' }} />
+                    <div className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[200px] animate-pulse" style={{ animationDuration: '15s', animationDelay: '5s' }} />
+                  </div>
+                </div>
                 <div className="max-w-6xl mx-auto relative">
                   <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
                     Performance Metrics
@@ -1246,7 +1176,10 @@ const App = () => {
                           { label: "GPU Utilization", value: 92, icon: "🎮" },
                           { label: "Network I/O", value: 85, icon: "🌐" }
                         ].map((metric, index) => (
-                          <div key={index} className="group" style={{ transitionDelay: `${index * 100}ms` }}>
+                          <div 
+                            key={index}
+                            className="bg-black/20 rounded-lg p-6 relative overflow-hidden hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
+                          >
                             <div className="flex justify-between mb-1">
                               <span className="text-gray-400 flex items-center">
                                 <span className="mr-2 opacity-50">{metric.icon}</span>
