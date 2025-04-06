@@ -434,14 +434,10 @@ const App = () => {
     setMousePosition({ x: 0, y: 0 });
   };
 
-  // Add scroll event listener
+  // Remove the scroll event listener
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Just initialize the scroll position once
+    setScrollY(0);
   }, []);
 
   return (
@@ -464,43 +460,6 @@ const App = () => {
           }
         }
         
-        @keyframes floatParticle {
-          0% {
-            transform: translateY(0) translateX(0);
-            opacity: 0.3;
-          }
-          25% {
-            opacity: 0.7;
-          }
-          75% {
-            opacity: 0.5;
-          }
-          100% {
-            transform: translateY(-100vh) translateX(20px);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes twinkle {
-          0%, 100% {
-            opacity: 0.2;
-            transform: scale(0.8);
-          }
-          50% {
-            opacity: 1;
-            transform: scale(1.1);
-          }
-        }
-        
-        @keyframes gradientSlide {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        
         .animate-fadeIn {
           animation: fadeIn 1.2s ease-out forwards;
           opacity: 0;
@@ -509,10 +468,6 @@ const App = () => {
         .animate-reveal {
           animation: reveal 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
           opacity: 0;
-        }
-        
-        .animate-gradientSlide {
-          animation: gradientSlide 8s ease-in-out infinite;
         }
         
         .star-twinkle {
@@ -527,69 +482,7 @@ const App = () => {
         .stagger-children > *:nth-child(5) { transition-delay: 1000ms; }
         .stagger-children > *:nth-child(6) { transition-delay: 1200ms; }
         .stagger-children > *:nth-child(7) { transition-delay: 1400ms; }
-        
-        /* Waleed's blinking animation */
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        
-        /* Waleed's floating animation */
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        
-        /* Circuit pattern animation */
-        @keyframes glow {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.7; }
-        }
-        
-        /* Floating particles animation */
-        @keyframes floatParticle {
-          0% {
-            transform: translateY(0) translateX(0);
-            opacity: 0.3;
-          }
-          25% {
-            opacity: 0.7;
-          }
-          75% {
-            opacity: 0.5;
-          }
-          100% {
-            transform: translateY(-100vh) translateX(20px);
-            opacity: 0;
-          }
-        }
-        
-        /* Star twinkling animation */
-        @keyframes twinkle {
-          0%, 100% {
-            opacity: 0.2;
-            transform: scale(0.8);
-          }
-          50% {
-            opacity: 1;
-            transform: scale(1.1);
-          }
-        }
-        
-        /* Gradient slide animation */
-        @keyframes gradientSlide {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        
-        .animate-gradientSlide {
-          animation: gradientSlide 8s ease-in-out infinite;
-        }
-        
+                
         /* Fix for Safari glow effect */
         .star-twinkle {
           filter: blur(0.5px);
@@ -597,14 +490,7 @@ const App = () => {
 
         /* Add smooth scrolling behavior */
         html {
-          scroll-behavior: smooth;
-        }
-
-        /* Add this new class to stop all animations */
-        .pause-animations * {
-          animation: none !important;
-          transform: none !important;
-          transition: none !important;
+          scroll-behavior: auto;
         }
       `}</style>
       <Routes>
@@ -617,61 +503,50 @@ const App = () => {
                 <div className="absolute inset-0">
                   {/* Dynamic gradient background with animation */}
                   <div className="absolute inset-0 bg-gradient-to-b from-black via-black/90 to-black z-0">
-                    {/* Large animated gradient orbs */}
-                    <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] rounded-full bg-blue-500/10 filter blur-[150px] animate-pulse" style={{ animationDuration: '15s' }} />
-                    <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/10 filter blur-[150px] animate-pulse" style={{ animationDuration: '10s' }} />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-indigo-500/10 filter blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+                    {/* Static gradient orbs */}
+                    <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] rounded-full bg-blue-500/10 filter blur-[150px]" />
+                    <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/10 filter blur-[150px]" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-indigo-500/10 filter blur-[100px]" />
                     
-                    {/* Animated waves */}
-                    <div className="absolute bottom-0 left-0 right-0 h-32 overflow-hidden transition-opacity duration-300" style={{ opacity: Math.max(0, 1 - scrollY / 1200) }}>
-                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-500/10 to-transparent animate-wave" style={{ animationDuration: '8s' }} />
-                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-500/10 to-transparent animate-wave-delayed" style={{ animationDuration: '10s' }} />
+                    {/* Static waves */}
+                    <div className="absolute bottom-0 left-0 right-0 h-32 overflow-hidden">
+                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-500/10 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-500/10 to-transparent" />
                     </div>
                     
-                    {/* Animated gradient lines */}
+                    {/* Static gradient lines */}
                     <div className="absolute top-1/2 inset-x-0 h-[2px] w-full overflow-hidden">
-                      <div className="absolute inset-0 h-full bg-gradient-to-r from-transparent via-blue-500/30 to-transparent w-full -translate-x-full animate-gradientSlide" />
+                      <div className="absolute inset-0 h-full bg-gradient-to-r from-transparent via-blue-500/30 to-transparent w-full" />
                     </div>
                     <div className="absolute top-1/3 inset-x-0 h-[1px] w-full overflow-hidden">
-                      <div className="absolute inset-0 h-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent w-full translate-x-full animate-gradientSlide-reverse" style={{ animationDuration: '12s' }} />
+                      <div className="absolute inset-0 h-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent w-full" />
                     </div>
                     
-                    {/* Interactive floating elements */}
-                    <div className={`absolute inset-0 ${scrollY > 0 ? 'pause-animations' : ''}`} aria-hidden="true">
-                      {Array.from({ length: 100 }).map((_, i) => {
-                        const size = Math.random() * 3 + 1;
-                        const x = Math.random() * 100;
-                        const y = Math.random() * 100;
-                        const delay = Math.random() * 5;
-                        const duration = 10 + Math.random() * 20;
-                        const opacity = Math.random() * 0.5 + 0.5;
-                        const color = Math.random() > 0.5 ? 'bg-blue-400/40' : 'bg-purple-400/40';
-                        
-                        return (
-                          <div
-                            key={i}
-                            className={`absolute rounded-full ${color}`}
-                            style={{
-                              top: `${y}%`,
-                              left: `${x}%`,
-                              width: `${size}px`,
-                              height: `${size}px`,
-                              opacity,
-                              animation: `floatParticle ${duration}s linear infinite, twinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
-                              animationDelay: `${delay}s, ${Math.random() * 3}s`,
-                              boxShadow: '0 0 10px rgba(255, 255, 255, 0.5)'
-                            }}
-                          />
-                        );
-                      })}
+                    {/* Static stars */}
+                    <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+                      {/* Stars */}
+                      {[...Array(50)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute w-0.5 h-0.5 bg-white rounded-full"
+                          style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            opacity: Math.random() * 0.5 + 0.5,
+                            pointerEvents: 'none'
+                          }}
+                        />
+                      ))}
                     </div>
                     
-                    {/* Animated grid pattern */}
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] opacity-20" />
+                    {/* Static grid pattern */}
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] opacity-20 pointer-events-none" style={{ transform: 'none', transition: 'none' }}/>
                     
-                    {/* Animated noise texture */}
-                    <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ 
-                      backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")'
+                    {/* Static noise texture */}
+                    <div className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none" style={{ 
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
+                      transform: 'none',
+                      transition: 'none'
                     }} />
                   </div>
                 </div>
@@ -735,35 +610,19 @@ const App = () => {
               {/* Website Development Section */}
               <section ref={websiteRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="websites">
                 <div className="absolute inset-0">
-                  {/* Dynamic background */}
+                  {/* Static background */}
                   <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black">
-                    {/* Animated code lines */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      {Array.from({ length: 20 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
-                          style={{
-                            width: `${Math.random() * 300 + 100}px`,
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            transform: `rotate(${Math.random() * 360}deg)`,
-                            animation: `codeLine ${Math.random() * 10 + 5}s linear infinite`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            filter: 'blur(0.5px)'
-                          }}
-                        />
-                      ))}
+                    {/* Static gradient mesh */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/10 to-transparent" />
                     </div>
                     
-                    {/* Animated gradient mesh */}
-                    <div className="absolute inset-0 opacity-30 overflow-hidden">
-                      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(147,51,234,0.2)_50%,transparent_100%)] bg-[length:200%_200%] animate-gradientSlide" style={{ animationDuration: '12s', animationDelay: '3s' }} />
-                    </div>
+                    {/* Static glowing orbs */}
+                    <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[120px]" />
+                    <div className="absolute bottom-1/3 right-1/3 w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[120px]" />
                     
-                    {/* Glowing orbs */}
-                    <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
-                    <div className="absolute bottom-1/3 right-1/3 w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[120px] animate-pulse" style={{ animationDuration: '8s', animationDelay: '2s' }} />
+                    {/* Static grid pattern */}
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] opacity-10" />
                   </div>
                 </div>
                 <div className="max-w-6xl mx-auto relative">
@@ -813,35 +672,19 @@ const App = () => {
               {/* Technical Showcase Section */}
               <section ref={technicalRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="technical">
                 <div className="absolute inset-0">
-                  {/* Dynamic background */}
+                  {/* Static background */}
                   <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black">
-                    {/* Animated circuit paths */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      {Array.from({ length: 30 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
-                          style={{
-                            width: `${Math.random() * 300 + 100}px`,
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            transform: `rotate(${Math.random() * 360}deg)`,
-                            animation: `circuitPath ${Math.random() * 15 + 10}s linear infinite`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            filter: 'blur(0.5px)'
-                          }}
-                        />
-                      ))}
+                    {/* Static gradient mesh */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/10 to-transparent" />
                     </div>
                     
-                    {/* Animated gradient mesh */}
-                    <div className="absolute inset-0 opacity-30 overflow-hidden">
-                      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(147,51,234,0.2)_50%,transparent_100%)] bg-[length:200%_200%] animate-gradientSlide" style={{ animationDuration: '12s', animationDelay: '3s' }} />
-                    </div>
+                    {/* Static glowing orbs */}
+                    <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[150px]" />
+                    <div className="absolute bottom-1/2 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[150px]" />
                     
-                    {/* Glowing orbs */}
-                    <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
-                    <div className="absolute bottom-1/2 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[150px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '3s' }} />
+                    {/* Static circuit pattern */}
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] opacity-10" />
                   </div>
                 </div>
                 <div className="max-w-6xl mx-auto relative">
@@ -996,35 +839,21 @@ const App = () => {
               {/* Neural Network Visualizer Section */}
               <section ref={neuralNetworkRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="neural-network">
                 <div className="absolute inset-0">
-                  {/* Dynamic background */}
+                  {/* Static background */}
                   <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black">
-                    {/* Animated neural connections */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      {Array.from({ length: 40 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"
-                          style={{
-                            width: `${Math.random() * 400 + 200}px`,
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            transform: `rotate(${Math.random() * 360}deg)`,
-                            animation: `neuralConnection ${Math.random() * 20 + 15}s linear infinite`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            filter: 'blur(0.5px)'
-                          }}
-                        />
-                      ))}
+                    {/* Static gradient mesh */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/10 to-transparent" />
                     </div>
                     
-                    {/* Animated gradient mesh */}
-                    <div className="absolute inset-0 opacity-30 overflow-hidden">
-                      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(147,51,234,0.2)_50%,transparent_100%)] bg-[length:200%_200%] animate-gradientSlide" style={{ animationDuration: '12s', animationDelay: '3s' }} />
-                    </div>
+                    {/* Static glowing orbs */}
+                    <div className="absolute top-1/3 right-1/3 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 filter blur-[180px]" />
+                    <div className="absolute bottom-1/3 left-1/3 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[180px]" />
                     
-                    {/* Glowing orbs */}
-                    <div className="absolute top-1/3 right-1/3 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 filter blur-[180px] animate-pulse" style={{ animationDuration: '15s' }} />
-                    <div className="absolute bottom-1/3 left-1/3 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[180px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+                    {/* Static neural pattern */}
+                    <div className="absolute inset-0 opacity-10" style={{ 
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")'
+                    }} />
                   </div>
                 </div>
                 <div className="max-w-6xl mx-auto relative">
@@ -1066,9 +895,8 @@ const App = () => {
                             {Array.from({ length: layer === 1 ? 4 : 3 }).map((_, i) => (
                               <div
                                 key={i}
-                                className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 relative animate-pulse"
+                                className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 relative"
                                 style={{
-                                  animationDelay: `${(layer * 3 + i) * 200}ms`,
                                   boxShadow: '0 0 20px rgba(147, 51, 234, 0.3)'
                                 }}
                               >
@@ -1082,12 +910,7 @@ const App = () => {
                                       transform: `translate(0, ${(j - 1) * 48}px) rotate(${Math.atan2((j - i) * 48, 120) * (180 / Math.PI)}deg)`,
                                       opacity: Math.random() * 0.5 + 0.5
                                     }}
-                                  >
-                                    <div 
-                                      className="absolute right-0 w-1 h-1 bg-blue-500 rounded-full animate-ping"
-                                      style={{ animationDuration: '1.5s', animationDelay: `${(layer * 4 + j) * 100}ms` }}
-                                    />
-                                  </div>
+                                  />
                                 ))}
                               </div>
                             ))}
@@ -1100,8 +923,8 @@ const App = () => {
                       <div className="absolute top-4 left-1/2 -translate-x-1/2 text-sm font-mono text-blue-400/70">Hidden Layer</div>
                       <div className="absolute top-4 right-4 text-sm font-mono text-purple-400/70">Output Layer</div>
 
-                      {/* Hover Effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      {/* Static Background */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5" />
                     </div>
                   </div>
                 </div>
@@ -1110,35 +933,19 @@ const App = () => {
               {/* Performance Metrics Section */}
               <section ref={metricsRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="metrics">
                 <div className="absolute inset-0">
-                  {/* Dynamic background */}
+                  {/* Static background */}
                   <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black">
-                    {/* Animated data streams */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      {Array.from({ length: 25 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
-                          style={{
-                            width: `${Math.random() * 300 + 100}px`,
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            transform: `rotate(${Math.random() * 360}deg)`,
-                            animation: `dataStream ${Math.random() * 12 + 8}s linear infinite`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            filter: 'blur(0.5px)'
-                          }}
-                        />
-                      ))}
+                    {/* Static gradient mesh */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/10 to-transparent" />
                     </div>
                     
-                    {/* Animated gradient mesh */}
-                    <div className="absolute inset-0 opacity-30 overflow-hidden">
-                      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(147,51,234,0.2)_50%,transparent_100%)] bg-[length:200%_200%] animate-gradientSlide" style={{ animationDuration: '12s', animationDelay: '3s' }} />
-                    </div>
+                    {/* Static glowing orbs */}
+                    <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[200px]" />
+                    <div className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[200px]" />
                     
-                    {/* Glowing orbs */}
-                    <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 filter blur-[200px] animate-pulse" style={{ animationDuration: '20s' }} />
-                    <div className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 filter blur-[200px] animate-pulse" style={{ animationDuration: '15s', animationDelay: '5s' }} />
+                    {/* Static data pattern */}
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] opacity-5" />
                   </div>
                 </div>
                 <div className="max-w-6xl mx-auto relative">
