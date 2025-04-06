@@ -130,11 +130,12 @@ const App = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Section refs for scroll animations
-  const featuresRef = useRef<HTMLElement>(null);
-  const technicalRef = useRef<HTMLElement>(null);
-  const neuralNetworkRef = useRef<HTMLElement>(null);
-  const metricsRef = useRef<HTMLElement>(null);
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const technicalRef = useRef<HTMLDivElement>(null);
+  const neuralNetworkRef = useRef<HTMLDivElement>(null);
+  const metricsRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
+  const websiteRef = useRef<HTMLDivElement>(null);
 
   // Initial dialog tree for Waleed
   const initialDialog: DialogOption[] = [
@@ -296,16 +297,24 @@ const App = () => {
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
-              entry.target.classList.add('animate-reveal');
-              observer.unobserve(entry.target);
+              const element = entry.target as HTMLElement;
+              element.classList.add('animate-reveal');
+              // Add a longer delay based on the section's position
+              const delay = Array.from(element.parentElement?.children || []).indexOf(element) * 300;
+              element.style.transitionDelay = `${delay}ms`;
+              observer.unobserve(element);
             }
           });
         },
-        { threshold: 0.1 }
+        { 
+          threshold: 0.35, // Set threshold to 0.35
+          rootMargin: '-200px 0px -200px 0px'
+        }
       );
 
       const sections = [
         featuresRef.current,
+        websiteRef.current,
         technicalRef.current,
         neuralNetworkRef.current,
         metricsRef.current,
@@ -418,29 +427,34 @@ const App = () => {
         }
         
         @keyframes reveal {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { 
+            opacity: 0; 
+            transform: translateY(80px) scale(0.98);
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0) scale(1);
+          }
         }
         
         .animate-fadeIn {
-          animation: fadeIn 0.8s ease-out forwards;
+          animation: fadeIn 1.2s ease-out forwards;
           opacity: 0;
         }
         
         .animate-reveal {
-          animation: reveal 1.2s ease-out forwards;
-          opacity: 1 !important;
-          transform: translateY(0) !important;
+          animation: reveal 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          opacity: 0;
         }
         
-        /* Stagger children animation */
-        .stagger-children > *:nth-child(1) { transition-delay: 100ms; }
-        .stagger-children > *:nth-child(2) { transition-delay: 200ms; }
-        .stagger-children > *:nth-child(3) { transition-delay: 300ms; }
-        .stagger-children > *:nth-child(4) { transition-delay: 400ms; }
-        .stagger-children > *:nth-child(5) { transition-delay: 500ms; }
-        .stagger-children > *:nth-child(6) { transition-delay: 600ms; }
-        .stagger-children > *:nth-child(7) { transition-delay: 700ms; }
+        /* Stagger children animation with longer delays */
+        .stagger-children > *:nth-child(1) { transition-delay: 200ms; }
+        .stagger-children > *:nth-child(2) { transition-delay: 400ms; }
+        .stagger-children > *:nth-child(3) { transition-delay: 600ms; }
+        .stagger-children > *:nth-child(4) { transition-delay: 800ms; }
+        .stagger-children > *:nth-child(5) { transition-delay: 1000ms; }
+        .stagger-children > *:nth-child(6) { transition-delay: 1200ms; }
+        .stagger-children > *:nth-child(7) { transition-delay: 1400ms; }
         
         /* Waleed's blinking animation */
         @keyframes blink {
@@ -507,6 +521,11 @@ const App = () => {
         /* Fix for Safari glow effect */
         .star-twinkle {
           filter: blur(0.5px);
+        }
+
+        /* Add smooth scrolling behavior */
+        html {
+          scroll-behavior: smooth;
         }
       `}</style>
       <Routes>
@@ -668,6 +687,75 @@ const App = () => {
                         <p className="text-gray-400">{feature.description}</p>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Website Development Section */}
+              <section ref={websiteRef} className="py-32 px-4 relative opacity-0 transition-all duration-1000 -translate-y-10" data-section="websites">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-10" />
+                <div className="max-w-6xl mx-auto relative">
+                  <div className="grid lg:grid-cols-2 gap-16 items-center">
+                    <div>
+                      <h2 className="text-3xl md:text-4xl font-bold mb-8">
+                        <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">Modern Web Development</span>
+                      </h2>
+                      <p className="text-gray-400 mb-8 text-lg">
+                        We create stunning, high-performance websites that deliver exceptional user experiences and drive business growth. Our team specializes in building modern, responsive web applications using the latest technologies.
+                      </p>
+                      <div className="space-y-4">
+                        {[
+                          "Responsive design that works on all devices",
+                          "SEO optimization for better visibility",
+                          "Lightning-fast loading times",
+                          "Modern tech stack (React, Next.js, TypeScript)",
+                          "Interactive user interfaces",
+                          "Secure and scalable architecture"
+                        ].map((feature, index) => (
+                          <div key={index} className="flex items-center space-x-3 group" style={{ transitionDelay: `${index * 100}ms` }}>
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 group-hover:bg-purple-500 transition-colors" />
+                            <span className="text-gray-300 group-hover:text-white transition-colors">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-8 flex space-x-4">
+                        <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg font-medium hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 transform hover:-translate-y-1">
+                          View Our Work
+                        </button>
+                        <button className="px-6 py-3 border border-blue-500/20 rounded-lg font-medium hover:bg-blue-500/10 hover:border-blue-500/40 transition-all duration-300 transform hover:-translate-y-1">
+                          Get a Quote
+                        </button>
+                      </div>
+                    </div>
+                    <div className="relative h-[500px] bg-black/20 rounded-lg overflow-hidden group">
+                      {/* Website Preview */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500/10 to-purple-600/10 rounded-lg p-4">
+                          <div className="w-full h-full bg-black/30 rounded-lg border border-blue-500/20 p-4">
+                            <div className="flex items-center space-x-2 mb-4">
+                              <div className="w-3 h-3 rounded-full bg-red-500" />
+                              <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                              <div className="w-3 h-3 rounded-full bg-green-500" />
+                            </div>
+                            <div className="space-y-4">
+                              <div className="h-8 bg-blue-500/20 rounded w-full" />
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="h-32 bg-blue-500/20 rounded" />
+                                <div className="h-32 bg-blue-500/20 rounded" />
+                                <div className="h-32 bg-blue-500/20 rounded" />
+                              </div>
+                              <div className="h-24 bg-blue-500/20 rounded w-full" />
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="h-16 bg-blue-500/20 rounded" />
+                                <div className="h-16 bg-blue-500/20 rounded" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Animated gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                    </div>
                   </div>
                 </div>
               </section>
