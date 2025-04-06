@@ -38,6 +38,7 @@ const App = () => {
   const [showWindowLabel, setShowWindowLabel] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   
   // Star/particle control
   const [particleCount, setParticleCount] = useState(100);
@@ -425,6 +426,16 @@ const App = () => {
     setMousePosition({ x: 0, y: 0 });
   };
 
+  // Add scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-black text-white">
       <Header />
@@ -580,6 +591,13 @@ const App = () => {
         html {
           scroll-behavior: smooth;
         }
+
+        /* Add this new class to stop all animations */
+        .pause-animations * {
+          animation: none !important;
+          transform: none !important;
+          transition: none !important;
+        }
       `}</style>
       <Routes>
         <Route path="/" element={
@@ -596,13 +614,22 @@ const App = () => {
                     <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/10 filter blur-[150px] animate-pulse" style={{ animationDuration: '10s' }} />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-indigo-500/10 filter blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
                     
-                    {/* Prominent animated gradient line */}
+                    {/* Animated waves */}
+                    <div className="absolute bottom-0 left-0 right-0 h-32 overflow-hidden transition-opacity duration-300" style={{ opacity: Math.max(0, 1 - scrollY / 1200) }}>
+                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-500/10 to-transparent animate-wave" style={{ animationDuration: '8s' }} />
+                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-500/10 to-transparent animate-wave-delayed" style={{ animationDuration: '10s' }} />
+                    </div>
+                    
+                    {/* Animated gradient lines */}
                     <div className="absolute top-1/2 inset-x-0 h-[2px] w-full overflow-hidden">
                       <div className="absolute inset-0 h-full bg-gradient-to-r from-transparent via-blue-500/30 to-transparent w-full -translate-x-full animate-gradientSlide" />
                     </div>
+                    <div className="absolute top-1/3 inset-x-0 h-[1px] w-full overflow-hidden">
+                      <div className="absolute inset-0 h-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent w-full translate-x-full animate-gradientSlide-reverse" style={{ animationDuration: '12s' }} />
+                    </div>
                     
-                    {/* Floating particles */}
-                    <div className="absolute inset-0" aria-hidden="true">
+                    {/* Interactive floating elements */}
+                    <div className={`absolute inset-0 ${scrollY > 0 ? 'pause-animations' : ''}`} aria-hidden="true">
                       {Array.from({ length: 100 }).map((_, i) => {
                         const size = Math.random() * 3 + 1;
                         const x = Math.random() * 100;
@@ -610,11 +637,12 @@ const App = () => {
                         const delay = Math.random() * 5;
                         const duration = 10 + Math.random() * 20;
                         const opacity = Math.random() * 0.5 + 0.5;
+                        const color = Math.random() > 0.5 ? 'bg-blue-400/40' : 'bg-purple-400/40';
                         
                         return (
                           <div
                             key={i}
-                            className="absolute rounded-full bg-white/40"
+                            className={`absolute rounded-full ${color}`}
                             style={{
                               top: `${y}%`,
                               left: `${x}%`,
@@ -630,8 +658,13 @@ const App = () => {
                       })}
                     </div>
                     
-                    {/* Grid Pattern */}
+                    {/* Animated grid pattern */}
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] opacity-20" />
+                    
+                    {/* Animated noise texture */}
+                    <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ 
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")'
+                    }} />
                   </div>
                 </div>
                 
