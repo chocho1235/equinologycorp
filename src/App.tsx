@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import InteractiveFooter from './components/InteractiveFooter';
 import Header from './components/Header';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import equinologyLogo from './images/logo.webp';
 import Blog from './pages/Blog';
 import Contact from './pages/Contact';
@@ -345,32 +345,49 @@ const App = () => {
     });
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    // Define movement constraints (in pixels)
+    const maxOffset = 20; // Maximum distance from initial position
+    
+    // Calculate new position with constraints - only allow horizontal movement
+    const newX = Math.max(-maxOffset, Math.min(maxOffset, e.clientX - dragOffset.x));
+    const newY = 0; // Fix Y position to 0
+    
+    // Use requestAnimationFrame for smoother animation
+    requestAnimationFrame(() => {
+      if (windowRef.current) {
+        windowRef.current.style.transform = `translate3d(${newX}px, ${newY}px, 0)`;
+      }
+    });
+  }, [isDragging, dragOffset]);
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging) return;
+    
+    // Update position state only when dragging ends
+    if (windowRef.current) {
+      const transform = windowRef.current.style.transform;
+      const matrix = new DOMMatrix(transform);
       setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y
+        x: matrix.m41,
+        y: 0 // Fix Y position to 0
       });
     }
-  };
-
-  const handleMouseUp = () => {
     setIsDragging(false);
-  };
+  }, [isDragging]);
 
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-    } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
     }
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragOffset]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const toggleCodeMinimize = () => {
     setIsCodeMinimized(!isCodeMinimized);
@@ -862,7 +879,7 @@ const App = () => {
                     >
                       {/* Window Controls Label */}
                       {showWindowLabel && (
-                        <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50">
+                        <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
                           <div className="relative">
                             <div className="relative bg-blue-500/20 px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 border border-blue-500/30">
                               <span className="text-blue-400 text-sm font-medium">Try the window controls</span>
@@ -882,19 +899,18 @@ const App = () => {
                           isCodeFullscreen ? 'fixed inset-0 z-50 m-0 rounded-none' : ''
                         } ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                         style={{
-                          transform: isCodeFullscreen ? 'none' : `translate(${position.x}px, ${position.y}px)`,
+                          transform: isCodeFullscreen ? 'none' : `translate3d(${position.x}px, ${position.y}px, 0)`,
                           position: isCodeFullscreen ? 'fixed' : 'absolute',
                           left: isCodeFullscreen ? 0 : 'auto',
                           top: isCodeFullscreen ? 0 : 'auto',
                           width: isCodeMaximized ? '100%' : `${windowSize.width}px`,
                           height: isCodeMaximized ? '100%' : isCodeMinimized ? '48px' : `${windowSize.height}px`,
                           zIndex: isDragging ? 50 : 10,
-                          userSelect: 'none'
+                          userSelect: 'none',
+                          willChange: 'transform',
+                          touchAction: 'none'
                         }}
-                        onMouseDown={(e) => {
-                          if (e.target instanceof Element && e.target.closest('.window-controls')) return;
-                          handleMouseDown(e);
-                        }}
+                        onMouseDown={handleMouseDown}
                       >
                         {/* Window Controls */}
                         <div className="flex items-center justify-between p-2 border-b border-gray-700 window-controls select-none">
@@ -971,9 +987,6 @@ const App = () => {
                         <div className={`p-2 text-xs text-gray-400 ${isCodeMinimized ? 'block' : 'hidden'} select-none`}>
                           model.py - Click to expand
                         </div>
-
-                        {/* Hover Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       </div>
                     </div>
                   </div>
