@@ -591,35 +591,30 @@ const App = () => {
                 <div className="absolute inset-0">
                   {/* Dynamic gradient background with animation */}
                   <div className="absolute inset-0 bg-gradient-to-b from-black via-black/90 to-black z-0">
-                    {/* Animated particles */}
+                    {/* Large animated gradient orbs */}
+                    <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] rounded-full bg-blue-500/10 filter blur-[150px] animate-pulse" style={{ animationDuration: '15s' }} />
+                    <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/10 filter blur-[150px] animate-pulse" style={{ animationDuration: '10s' }} />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-indigo-500/10 filter blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+                    
+                    {/* Prominent animated gradient line */}
+                    <div className="absolute top-1/2 inset-x-0 h-[2px] w-full overflow-hidden">
+                      <div className="absolute inset-0 h-full bg-gradient-to-r from-transparent via-blue-500/30 to-transparent w-full -translate-x-full animate-gradientSlide" />
+                    </div>
+                    
+                    {/* Floating particles */}
                     <div className="absolute inset-0" aria-hidden="true">
                       {Array.from({ length: 100 }).map((_, i) => {
-                        // Generate random properties for each star
-                        const size = Math.random() * 2 + 1;
+                        const size = Math.random() * 3 + 1;
                         const x = Math.random() * 100;
                         const y = Math.random() * 100;
-                        const opacity = Math.random() * 0.7 + 0.3;
                         const delay = Math.random() * 5;
                         const duration = 10 + Math.random() * 20;
-                        const colorTypes = [
-                          'bg-blue-400', 'bg-blue-300', 'bg-white', 
-                          'bg-purple-300', 'bg-indigo-300'
-                        ];
-                        const colorClass = colorTypes[Math.floor(Math.random() * colorTypes.length)];
-                        
-                        // Map color class to shadow color
-                        const shadowColor = {
-                          'bg-blue-400': 'rgba(96, 165, 250, 0.6)',
-                          'bg-blue-300': 'rgba(147, 197, 253, 0.6)',
-                          'bg-white': 'rgba(255, 255, 255, 0.6)',
-                          'bg-purple-300': 'rgba(216, 180, 254, 0.6)',
-                          'bg-indigo-300': 'rgba(165, 180, 252, 0.6)'
-                        }[colorClass];
+                        const opacity = Math.random() * 0.5 + 0.5;
                         
                         return (
                           <div
                             key={i}
-                            className={`absolute rounded-full ${colorClass} star-twinkle`}
+                            className="absolute rounded-full bg-white/40"
                             style={{
                               top: `${y}%`,
                               left: `${x}%`,
@@ -628,7 +623,7 @@ const App = () => {
                               opacity,
                               animation: `floatParticle ${duration}s linear infinite, twinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
                               animationDelay: `${delay}s, ${Math.random() * 3}s`,
-                              boxShadow: `0 0 ${size * 2}px 0 ${shadowColor}`
+                              boxShadow: '0 0 10px rgba(255, 255, 255, 0.5)'
                             }}
                           />
                         );
@@ -636,16 +631,7 @@ const App = () => {
                     </div>
                     
                     {/* Grid Pattern */}
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-5" />
-                    
-                    {/* Accent color orbs */}
-                    <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-blue-500/5 filter blur-[100px] animate-pulse" style={{ animationDuration: '15s' }} />
-                    <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] rounded-full bg-purple-500/5 filter blur-[100px] animate-pulse" style={{ animationDuration: '10s' }} />
-                    
-                    {/* Animated gradient line */}
-                    <div className="absolute top-1/2 inset-x-0 h-px w-full overflow-hidden">
-                      <div className="absolute inset-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent w-full -translate-x-full animate-gradientSlide" />
-                    </div>
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] opacity-20" />
                   </div>
                 </div>
                 
